@@ -8,11 +8,13 @@ interface DashboardLayoutProps {
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-slate-50 to-purple-50">
+    <div className="min-h-screen bg-[#f7f7f7]">
       <Sidebar />
-      <div className="ml-20">
-        {children}
-      </div>
+      <main className="ml-16 min-h-screen transition-all duration-300">
+        <div className="px-6 py-4">
+          {children}
+        </div>
+      </main>
     </div>
   );
 };

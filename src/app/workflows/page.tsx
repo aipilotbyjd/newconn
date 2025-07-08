@@ -169,18 +169,21 @@ export default function Workflows() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
+      <div className="h-screen bg-[#f7f9fb]">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Workflows</h1>
-            <p className="text-gray-600">Manage and monitor your automation workflows</p>
+        <div className="bg-white border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900">Workflows</h1>
+            </div>
+            <button className="bg-[#ff6d5a] text-white px-4 py-2 rounded-md font-medium hover:bg-[#ff5242] transition-colors flex items-center gap-2">
+              <span className="text-lg">+</span>
+              <span>Add workflow</span>
+            </button>
           </div>
-          <button className="bg-black text-white px-6 py-3 rounded-2xl font-medium hover:bg-gray-900 transition-colors flex items-center space-x-2">
-            <span>➕</span>
-            <span>Create Workflow</span>
-          </button>
         </div>
+
+        <div className="p-6">
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -287,6 +290,7 @@ export default function Workflows() {
             </div>
           </div>
         )}
+        </div>
       </div>
     </DashboardLayout>
   );

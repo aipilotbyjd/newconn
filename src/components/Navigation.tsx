@@ -9,10 +9,12 @@ const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
-    { name: 'Dashboard', path: '/', icon: '📊' },
     { name: 'Workflows', path: '/workflows', icon: '⚡' },
     { name: 'Executions', path: '/executions', icon: '🔄' },
     { name: 'Credentials', path: '/credentials', icon: '🔐' },
+    { name: 'Templates', path: '/templates', icon: '📋' },
+    { name: 'Variables', path: '/variables', icon: '🔤' },
+    { name: 'Settings', path: '/settings', icon: '⚙️' },
   ];
 
   return (
