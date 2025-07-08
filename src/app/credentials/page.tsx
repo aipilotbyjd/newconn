@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import DashboardLayout from '../../components/DashboardLayout';
 
 const CredentialCard = ({ name, type, service, status, lastUsed, icon }: any) => {
@@ -64,8 +65,16 @@ const CredentialCard = ({ name, type, service, status, lastUsed, icon }: any) =>
 };
 
 export default function Credentials() {
-  const credentials = [
+  const [searchQuery, setSearchQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('name');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+
+  const allCredentials = [
     {
+      id: 1,
       name: 'Slack API',
       type: 'OAuth Token',
       service: 'Slack',
@@ -74,6 +83,7 @@ export default function Credentials() {
       icon: '💬'
     },
     {
+      id: 2,
       name: 'Database Connection',
       type: 'Connection String',
       service: 'PostgreSQL',
@@ -82,6 +92,7 @@ export default function Credentials() {
       icon: '🗄️'
     },
     {
+      id: 3,
       name: 'Email Service',
       type: 'API Key',
       service: 'SendGrid',
@@ -90,6 +101,7 @@ export default function Credentials() {
       icon: '📧'
     },
     {
+      id: 4,
       name: 'AWS S3',
       type: 'Access Key',
       service: 'Amazon S3',
@@ -98,6 +110,7 @@ export default function Credentials() {
       icon: '☁️'
     },
     {
+      id: 5,
       name: 'GitHub Integration',
       type: 'Personal Access Token',
       service: 'GitHub',
@@ -106,14 +119,74 @@ export default function Credentials() {
       icon: '🐙'
     },
     {
+      id: 6,
       name: 'Webhook Endpoint',
       type: 'Bearer Token',
       service: 'Custom API',
       status: 'active',
       lastUsed: '3 hours ago',
       icon: '🔗'
+    },
+    {
+      id: 7,
+      name: 'Stripe Payment',
+      type: 'API Key',
+      service: 'Stripe',
+      status: 'active',
+      lastUsed: '5 hours ago',
+      icon: '💳'
+    },
+    {
+      id: 8,
+      name: 'Twilio SMS',
+      type: 'OAuth Token',
+      service: 'Twilio',
+      status: 'expired',
+      lastUsed: '2 weeks ago',
+      icon: '📱'
     }
   ];
+
+  // Filter credentials
+  let filteredCredentials = allCredentials.filter(credential => 
+    credential.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    credential.service.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Apply type filter
+  if (typeFilter !== 'all') {
+    filteredCredentials = filteredCredentials.filter(credential => credential.type === typeFilter);
+  }
+
+  // Apply status filter
+  if (statusFilter !== 'all') {
+    filteredCredentials = filteredCredentials.filter(credential => credential.status === statusFilter);
+  }
+
+  // Sort credentials
+  const sortedCredentials = [...filteredCredentials].sort((a, b) => {
+    switch (sortBy) {
+      case 'name':
+        return a.name.localeCompare(b.name);
+      case 'service':
+        return a.service.localeCompare(b.service);
+      case 'status':
+        return a.status.localeCompare(b.status);
+      default:
+        return 0;
+    }
+  });
+
+  // Pagination
+  const totalPages = Math.ceil(sortedCredentials.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedCredentials = sortedCredentials.slice(startIndex, startIndex + itemsPerPage);
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = (setter: any) => (value: any) => {
+    setter(value);
+    setCurrentPage(1);
+  };
 
   return (
     <DashboardLayout>
@@ -134,48 +207,140 @@ export default function Credentials() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-purple-50 rounded-3xl p-6">
             <h3 className="text-sm text-gray-600 mb-1">Total Credentials</h3>
-            <p className="text-3xl font-bold text-gray-900">{credentials.length}</p>
+            <p className="text-3xl font-bold text-gray-900">{allCredentials.length}</p>
           </div>
           <div className="bg-green-50 rounded-3xl p-6">
             <h3 className="text-sm text-gray-600 mb-1">Active</h3>
             <p className="text-3xl font-bold text-gray-900">
-              {credentials.filter(c => c.status === 'active').length}
+              {allCredentials.filter(c => c.status === 'active').length}
             </p>
           </div>
           <div className="bg-red-50 rounded-3xl p-6">
             <h3 className="text-sm text-gray-600 mb-1">Expired</h3>
             <p className="text-3xl font-bold text-gray-900">
-              {credentials.filter(c => c.status === 'expired').length}
+              {allCredentials.filter(c => c.status === 'expired').length}
             </p>
           </div>
           <div className="bg-gray-50 rounded-3xl p-6">
             <h3 className="text-sm text-gray-600 mb-1">Inactive</h3>
             <p className="text-3xl font-bold text-gray-900">
-              {credentials.filter(c => c.status === 'inactive').length}
+              {allCredentials.filter(c => c.status === 'inactive').length}
             </p>
           </div>
         </div>
 
+        {/* Search and Filters */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              placeholder="Search credentials..."
+              value={searchQuery}
+              onChange={(e) => handleFilterChange(setSearchQuery)(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-2xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <svg className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <select
+            value={typeFilter}
+            onChange={(e) => handleFilterChange(setTypeFilter)(e.target.value)}
+            className="px-4 py-3 bg-white border border-gray-200 rounded-2xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">All Types</option>
+            <option value="OAuth Token">OAuth Token</option>
+            <option value="API Key">API Key</option>
+            <option value="Connection String">Connection String</option>
+            <option value="Access Key">Access Key</option>
+            <option value="Personal Access Token">Personal Access Token</option>
+            <option value="Bearer Token">Bearer Token</option>
+          </select>
+          <select
+            value={statusFilter}
+            onChange={(e) => handleFilterChange(setStatusFilter)(e.target.value)}
+            className="px-4 py-3 bg-white border border-gray-200 rounded-2xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="expired">Expired</option>
+            <option value="inactive">Inactive</option>
+          </select>
+          <select
+            value={sortBy}
+            onChange={(e) => handleFilterChange(setSortBy)(e.target.value)}
+            className="px-4 py-3 bg-white border border-gray-200 rounded-2xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="name">Sort by Name</option>
+            <option value="service">Sort by Service</option>
+            <option value="status">Sort by Status</option>
+          </select>
+        </div>
+
         {/* Credentials Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {credentials.map((credential, index) => (
-            <CredentialCard key={index} {...credential} />
+          {paginatedCredentials.map((credential) => (
+            <CredentialCard key={credential.id} {...credential} />
           ))}
         </div>
 
-        {/* Add New CTA */}
-        <div className="mt-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-3xl p-8 text-center text-white">
-          <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl">🔐</span>
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-8">
+            <p className="text-sm text-gray-600">
+              Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, sortedCredentials.length)} of {sortedCredentials.length} credentials
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <div className="flex items-center gap-1">
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`w-10 h-10 rounded-xl text-sm font-medium transition-colors ${
+                      currentPage === i + 1 
+                        ? 'bg-blue-500 text-white' 
+                        : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
           </div>
-          <h3 className="text-2xl font-bold mb-2">Add New Credential</h3>
-          <p className="text-white/80 mb-6 max-w-md mx-auto">
-            Securely store API keys, tokens, and connection strings for your workflows
-          </p>
-          <button className="bg-white text-purple-600 px-8 py-3 rounded-2xl font-medium hover:bg-gray-100 transition-colors">
-            Add Credential
-          </button>
-        </div>
+        )}
+
+        {/* Add New CTA */}
+        {filteredCredentials.length === 0 && (
+          <div className="mt-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-3xl p-8 text-center text-white">
+            <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <span className="text-3xl">🔐</span>
+            </div>
+            <h3 className="text-2xl font-bold mb-2">No Credentials Found</h3>
+            <p className="text-white/80 mb-6 max-w-md mx-auto">
+              {searchQuery || typeFilter !== 'all' || statusFilter !== 'all' 
+                ? 'Try adjusting your filters or search query'
+                : 'Get started by adding your first credential'}
+            </p>
+            <button className="bg-white text-purple-600 px-8 py-3 rounded-2xl font-medium hover:bg-gray-100 transition-colors">
+              Add Credential
+            </button>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );

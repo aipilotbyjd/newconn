@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import DashboardLayout from '../components/DashboardLayout';
 
 const StatCard = ({ icon, title, value, subtitle, change, trend }: any) => {
@@ -53,21 +54,60 @@ const TodoItem = ({ icon, text, time }: any) => (
 );
 
 export default function Home() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dateRange, setDateRange] = useState('last7days');
+  const [emailFilter, setEmailFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 4;
+
+  // Mock email data
+  const allEmails = [
+    { id: 1, avatar: 'HM', name: 'Hannah Morgan', subject: 'Meeting scheduled', time: '1:24 PM' },
+    { id: 2, avatar: 'MC', name: 'Megan Clark', subject: 'Update on marketing campaign', time: '12:32 PM' },
+    { id: 3, avatar: 'BW', name: 'Brandon Williams', subject: 'Designly 2.0 is about to launch', time: 'Yesterday at 8:57 PM' },
+    { id: 4, avatar: 'RS', name: 'Reid Smith', subject: 'My friend Julie loves Dappr!', time: 'Yesterday at 8:49 PM' },
+    { id: 5, avatar: 'JS', name: 'John Smith', subject: 'Project update needed', time: '2 days ago' },
+    { id: 6, avatar: 'AB', name: 'Alice Brown', subject: 'Budget review meeting', time: '3 days ago' },
+    { id: 7, avatar: 'KW', name: 'Kevin Wilson', subject: 'New client onboarding', time: '3 days ago' },
+    { id: 8, avatar: 'LT', name: 'Lisa Thompson', subject: 'Team performance report', time: '4 days ago' },
+  ];
+
+  // Filter emails based on search
+  const filteredEmails = allEmails.filter(email => 
+    email.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    email.subject.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Pagination
+  const totalPages = Math.ceil(filteredEmails.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedEmails = filteredEmails.slice(startIndex, startIndex + itemsPerPage);
+
   return (
     <DashboardLayout>
       <div className="p-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-bold text-gray-900">Good morning, James!</h1>
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900">Good morning, James!</h1>
+            <p className="text-gray-600 mt-2">Here's what's happening with your business today.</p>
+          </div>
           <div className="flex items-center space-x-4">
-            <button className="p-3 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-              <span className="text-xl">📅</span>
-            </button>
-            <button className="p-3 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+            {/* Date Range Filter */}
+            <select
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value)}
+              className="px-4 py-2 bg-white rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="today">Today</option>
+              <option value="yesterday">Yesterday</option>
+              <option value="last7days">Last 7 days</option>
+              <option value="last30days">Last 30 days</option>
+              <option value="last90days">Last 90 days</option>
+            </select>
+            <button className="p-3 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow relative">
               <span className="text-xl">🔔</span>
-            </button>
-            <button className="p-3 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-              <span className="text-xl">🔔</span>
+              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-white font-bold">
               J
@@ -130,33 +170,82 @@ export default function Home() {
 
             {/* Recent Emails */}
             <div className="bg-white rounded-3xl shadow-sm p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Recent emails</h3>
-              <div className="space-y-2">
-                <EmailItem 
-                  avatar="HM"
-                  name="Hannah Morgan"
-                  subject="Meeting scheduled"
-                  time="1:24 PM"
-                />
-                <EmailItem 
-                  avatar="MC"
-                  name="Megan Clark"
-                  subject="Update on marketing campaign"
-                  time="12:32 PM"
-                />
-                <EmailItem 
-                  avatar="BW"
-                  name="Brandon Williams"
-                  subject="Designly 2.0 is about to launch"
-                  time="Yesterday at 8:57 PM"
-                />
-                <EmailItem 
-                  avatar="RS"
-                  name="Reid Smith"
-                  subject="My friend Julie loves Dappr!"
-                  time="Yesterday at 8:49 PM"
-                />
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-semibold text-gray-900">Recent emails</h3>
+                <div className="flex items-center gap-3">
+                  {/* Search */}
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Search emails..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-48"
+                    />
+                    <svg className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  {/* Filter */}
+                  <select
+                    value={emailFilter}
+                    onChange={(e) => setEmailFilter(e.target.value)}
+                    className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="all">All</option>
+                    <option value="unread">Unread</option>
+                    <option value="starred">Starred</option>
+                  </select>
+                </div>
               </div>
+              <div className="space-y-2">
+                {paginatedEmails.map((email) => (
+                  <EmailItem
+                    key={email.id}
+                    avatar={email.avatar}
+                    name={email.name}
+                    subject={email.subject}
+                    time={email.time}
+                  />
+                ))}
+              </div>
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                  <p className="text-sm text-gray-600">
+                    Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredEmails.length)} of {filteredEmails.length}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      disabled={currentPage === 1}
+                      className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                    {[...Array(totalPages)].map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setCurrentPage(i + 1)}
+                        className={`px-3 py-1 rounded-lg text-sm ${currentPage === i + 1 ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'}`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      disabled={currentPage === totalPages}
+                      className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import DashboardLayout from '../../components/DashboardLayout';
 
 const MetricCard = ({ title, value, change, trend, icon, color }: any) => {
@@ -20,6 +21,24 @@ const MetricCard = ({ title, value, change, trend, icon, color }: any) => {
 };
 
 export default function Analytics() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('name');
+  const [dateRange, setDateRange] = useState('last7days');
+
+  const workflowMetrics = [
+    { id: 1, name: 'Data Sync Pipeline', success: 98.5, runs: 234 },
+    { id: 2, name: 'Email Notifications', success: 100, runs: 567 },
+    { id: 3, name: 'Database Backup', success: 95.2, runs: 89 },
+    { id: 4, name: 'Report Generation', success: 92.1, runs: 123 }
+  ];
+
+  const sortedWorkflows = workflowMetrics.sort((a, b) => {
+    if (sortBy === 'success') {
+      return b.success - a.success;
+    }
+    return a.name.localeCompare(b.name);
+  });
+
   return (
     <DashboardLayout>
       <div className="p-8">
@@ -30,10 +49,14 @@ export default function Analytics() {
             <p className="text-gray-600">Monitor your workflow performance and system metrics</p>
           </div>
           <div className="flex items-center space-x-3">
-            <select className="bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm">
-              <option>Last 7 days</option>
-              <option>Last 30 days</option>
-              <option>Last 90 days</option>
+            <select 
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value)}
+              className="bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm"
+            >
+              <option value="last7days">Last 7 days</option>
+              <option value="last30days">Last 30 days</option>
+              <option value="last90days">Last 90 days</option>
             </select>
             <button className="bg-black text-white px-6 py-3 rounded-2xl font-medium hover:bg-gray-900 transition-colors">
               Export Report
@@ -77,6 +100,25 @@ export default function Analytics() {
           />
         </div>
 
+        {/* Search, Filters, and Sort */}
+        <div className="flex justify-between items-center mb-6">
+          <input
+            type="text"
+            placeholder="Search workflows..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-4 pr-4 py-2 w-full md:w-1/3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="ml-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="name">Sort by Name</option>
+            <option value="success">Sort by Success Rate</option>
+          </select>
+        </div>
+
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Execution Trends */}
@@ -91,28 +133,27 @@ export default function Analytics() {
           <div className="bg-white rounded-3xl shadow-sm p-6">
             <h3 className="text-xl font-semibold text-gray-900 mb-4">Workflow Performance</h3>
             <div className="space-y-4">
-              {[
-                { name: 'Data Sync Pipeline', success: 98.5, runs: 234 },
-                { name: 'Email Notifications', success: 100, runs: 567 },
-                { name: 'Database Backup', success: 95.2, runs: 89 },
-                { name: 'Report Generation', success: 92.1, runs: 123 }
-              ].map((workflow, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium text-gray-900">{workflow.name}</span>
-                      <span className="text-sm text-gray-500">{workflow.success}%</span>
+              {sortedWorkflows
+                .filter(w => 
+                  w.name.toLowerCase().includes(searchQuery.toLowerCase())
+                )
+                .map((workflow) => (
+                  <div key={workflow.id} className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium text-gray-900">{workflow.name}</span>
+                        <span className="text-sm text-gray-500">{workflow.success}%</span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full"
+                          style={{ width: `${workflow.success}%` }}
+                        ></div>
+                      </div>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2">
-                      <div 
-                        className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full"
-                        style={{ width: `${workflow.success}%` }}
-                      ></div>
-                    </div>
+                    <span className="ml-4 text-sm text-gray-500">{workflow.runs} runs</span>
                   </div>
-                  <span className="ml-4 text-sm text-gray-500">{workflow.runs} runs</span>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         </div>
